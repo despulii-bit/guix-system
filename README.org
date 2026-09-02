@@ -1,0 +1,42 @@
+#+TITLE: Guix System & Home Configuration
+#+AUTHOR: despulii
+#+DESCRIPTION: Monorepo for GNU Guix system declarations, Guix Home environment, and channel profiles.
+
+* Overview
+
+This repository contains the full declarative configuration for my GNU Guix machine, including operating system settings, user-level home configurations, and channel definitions.
+
+* Directory Structure
+
+** =config/=
+Contains configuration files for Guix itself and system-wide channels.
+- ~channels.scm~ :: Specifies the Guix channels (e.g., official ~guix~, ~nonguix~) used for system updates and package definitions.
+
+** =home/=
+Contains GNU Guix Home specifications for managing the user profile, dotfiles, and user-installed packages.
+- ~guix-home-config.scm~ :: The central Guix Home environment declaration handling user packages, shell environments, and user-level service configurations.
+
+** =system/=
+Contains core system-level declarations and hardware-specific configurations.
+- ~config.scm~ :: The primary ~operating-system~ declaration defining system services, users, bootloader, kernel, and file systems.
+- ~nonguix.scm~ :: System configurations or channel integrations specifically tailored for non-free kernels, microcode, or proprietary drivers.
+
+* Usage
+
+** Deploying System Configuration
+To reconfigure the operating system state:
+#+begin_src sh
+sudo guix system reconfigure system/config.scm
+#+end_src
+
+** Deploying Guix Home
+To apply user-level profile updates and dotfiles:
+#+begin_src sh
+guix home reconfigure home/guix-home-config.scm
+#+end_src
+
+** Updating Channels
+To pull the latest revisions from defined channels:
+#+begin_src sh
+guix pull -C config/channels.scm
+#+end_src
