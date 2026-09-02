@@ -1,20 +1,25 @@
 #+TITLE: Guix System & Home Configuration
 #+AUTHOR: despulii
-#+DESCRIPTION: Monorepo for GNU Guix system declarations, Guix Home environment, and channel profiles.
+#+DESCRIPTION: Monorepo for GNU Guix system declarations, Guix Home environment, channel profiles, and Nix integration.
 
 * Overview
 
-This repository contains the full declarative configuration for my GNU Guix machine, including operating system settings, user-level home configurations, and channel definitions.
+This repository contains the full declarative configuration for my GNU Guix machine, including operating system settings, user-level home configurations, channel definitions, and Nix Flake package management.
 
 * Directory Structure
 
-** =config/=
-Contains configuration files for Guix itself and system-wide channels.
+** =meta/=
+Contains metadata, repository definitions, and system-wide Guix channels.
 - ~channels.scm~ :: Specifies the Guix channels (e.g., official ~guix~, ~nonguix~) used for system updates and package definitions.
 
-** =home/=
+** =user/=
 Contains GNU Guix Home specifications for managing the user profile, dotfiles, and user-installed packages.
-- ~guix-home-config.scm~ :: The central Guix Home environment declaration handling user packages, shell environments, and user-level service configurations.
+- ~guix-home-config.scm~ :: The central Guix Home environment declaration handling user packages, font dependencies, shell environments, and user-level service configurations.
+
+** =nix/=
+Contains declarative Nix Flake declarations for packages managed via Nixpkgs.
+- ~flake.nix~ :: Defines non-Guix packages (e.g., ~ungoogled-chromium~) installed into the user profile.
+- ~flake.lock~ :: Lockfile pinning the ~nixpkgs~ revision for reproducible builds.
 
 ** =system/=
 Contains core system-level declarations and hardware-specific configurations.
@@ -29,14 +34,17 @@ To reconfigure the operating system state:
 sudo guix system reconfigure system/config.scm
 #+end_src
 
-** Deploying Guix Home
-To apply user-level profile updates and dotfiles:
+** Deploying User Home Configuration
+To apply user-level profile updates, dotfiles, and automatic Nix Flake additions:
 #+begin_src sh
-guix home reconfigure home/guix-home-config.scm
+guix home reconfigure user/guix-home-config.scm
 #+end_src
+
+** Managing Nix Packages
+Nix Flake integration is wired directly into Guix Home activation hooks. Adding or updating packages in =nix/flake.nix= and running =guix home reconfigure user/guix-home-config.scm= will automatically apply changes to your user profile.
 
 ** Updating Channels
 To pull the latest revisions from defined channels:
 #+begin_src sh
-guix pull -C config/channels.scm
+guix pull -C meta/channels.scm
 #+end_src
