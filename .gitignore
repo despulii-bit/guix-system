@@ -1,0 +1,4 @@
+# Ignore generated runtime files and secrets
+*.bak
+shadow
+passwd
