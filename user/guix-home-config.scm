@@ -11,11 +11,12 @@
              (guix gexp)
              (srfi srfi-1))
 
-;; Load the dwl service file relative to the current directory
+;; Load modular service files
 (load (string-append (dirname (current-filename)) "/dwl/service.scm"))
+(load (string-append (dirname (current-filename)) "/foot/service.scm"))
 
 (home-environment
-  ;; Base packages + packages from DWL module
+  ;; Combine base packages + DWL packages + Foot packages
   (packages
     (append (list git
                   screen
@@ -24,9 +25,10 @@
                   font-dejavu
                   font-liberation
                   font-google-noto)
-            dwl-packages))
+            dwl-packages
+            foot-packages))
 
-  ;; Base services + DWL services
+  ;; Combine base services + DWL services + Foot services
   (services
     (append (list
              ;; 1. Ensure runtime directory is created on login with 0700 permissions
@@ -70,4 +72,5 @@
                                    (system* nix-bin "profile" "add"
                                             (string-append "path:" (getenv "HOME") "/src/guix-system/nix"))))))
             
-            dwl-home-services)))
+            dwl-home-services
+            foot-home-services)))
