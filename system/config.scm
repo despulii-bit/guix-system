@@ -2,6 +2,7 @@
 (use-modules (gnu)
              (gnu packages window-management)
              (gnu services networking)
+             (gnu services shepherd)          ; Added for shepherd-service-type
              (guix packages)
              (guix gexp)
              (guix utils)
@@ -23,6 +24,34 @@
               (lambda _
                 (copy-file #$(local-file "/home/i/.config/dwl/config.h") "config.h")
                 #t))))))))
+
+;; Service to automatically create /tmp/runtime-1000 on boot for Wayland/dwl
+(define create-user-runtime-dir-service
+  (simple-service 'create-user-runtime-dir
+                  shepherd-root-service-type
+                  (list (shepherd-service
+                          (provision '(user-runtime-dir))
+                          (requirement '(file-systems))
+                          (documentation "Create /tmp/runtime-1000 for user i.")
+                          (start #~(lambda _
+                                     (let ((dir "/tmp/runtime-1000"))
+                                       (mkdir-p dir)
+                                       (chown dir 1000 100) ; UID 1000 (user i), GID 100 (users)
+                                       (chmod dir #o700))))
+                          (one-shot? #t)))))
+
+;; Service to set initial screen brightness to 1% at boot
+(define boot-brightness-service
+  (simple-service 'boot-brightness
+                  shepherd-root-service-type
+                  (list (shepherd-service
+                          (provision '(set-boot-brightness))
+                          (requirement '(udev))
+                          (documentation "Set backlight brightness to 1% on boot.")
+                          (start #~(lambda _
+                                     (invoke #$(file-append brightnessctl "/bin/brightnessctl")
+                                             "set" "1%")))
+                          (one-shot? #t)))))
 
 (operating-system
   (host-name "dl74")
@@ -67,14 +96,25 @@
   ;; --- Services ---
   (services
     (append (list 
-                  ;; Required seat management daemon for rootless Wayland
+                  ;; Creates /tmp/runtime-1000 at boot to prevent missing XDG_RUNTIME_DIR errors
+                  create-user-runtime-dir-service
+
+                  ;; Automatically sets brightness to 1% on startup
+                  boot-brightness-service
+
+                  ;; Seat management daemon for Wayland
                   (service seatd-service-type)
 
-		  ;; Wi-Fi daemon required by NetworkManager
-	    	  (service wpa-supplicant-service-type)
+                  ;; Udev rules to allow video group non-root access to backlight devices
+                  (simple-service 'brightness-udev-rules
+                                  udev-service-type
+                                  (list brightnessctl))
+
+                  ;; Wi-Fi daemon required by NetworkManager
+                  (service wpa-supplicant-service-type)
 
                   ;; Automatic network configuration via DHCP
-		  (service network-manager-service-type)
+                  (service network-manager-service-type)
 
                   ;; Non-free binary substitutes
                   (simple-service 'nonguix-substitutes
