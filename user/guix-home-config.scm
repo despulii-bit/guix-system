@@ -11,12 +11,18 @@
              (guix gexp)
              (srfi srfi-1))
 
-;; Load modular service files
+;; 1. Load the relative module files into memory first
 (load (string-append (dirname (current-filename)) "/dwl/service.scm"))
+(load (string-append (dirname (current-filename)) "/kanshi/service.scm"))
 (load (string-append (dirname (current-filename)) "/foot/service.scm"))
 
+;; 2. Import their exported variables
+(use-modules (user dwl service)
+             (user kanshi service)
+             (user foot service))
+
 (home-environment
-  ;; Combine base packages + DWL packages + Foot packages
+  ;; Combine base packages + DWL packages + Kanshi packages + Foot packages
   (packages
     (append (list git
                   screen
@@ -26,9 +32,10 @@
                   font-liberation
                   font-google-noto)
             dwl-packages
+            kanshi-packages
             foot-packages))
 
-  ;; Combine base services + DWL services + Foot services
+  ;; Combine base services + DWL services + Kanshi services + Foot services
   (services
     (append (list
              ;; 1. Ensure runtime directory is created on login with 0700 permissions
@@ -42,6 +49,18 @@
              (service home-bash-service-type
                       (home-bash-configuration
                        (guix-defaults? #t)
+                       (bash-profile
+                        (list (plain-file "bash_profile"
+                                          (string-append
+                                           "# Set and export XDG_RUNTIME_DIR early on login\n"
+                                           "export XDG_RUNTIME_DIR=\"/tmp/runtime-$(id -u)\"\n"
+                                           "if [ ! -d \"$XDG_RUNTIME_DIR\" ]; then\n"
+                                           "  mkdir -p -m 0700 \"$XDG_RUNTIME_DIR\"\n"
+                                           "fi\n\n"
+                                           "# Run Guix Home on-first-login script if skipped\n"
+                                           "if [ -f \"$HOME/.guix-home/on-first-login\" ]; then\n"
+                                           "  \"$HOME/.guix-home/on-first-login\"\n"
+                                           "fi\n"))))
                        (bashrc
                         (list (plain-file "bashrc"
                                           (string-append
@@ -49,12 +68,8 @@
                                            "alias ll='ls -l'\n"
                                            "alias chromium='chromium --disable-gpu'\n"
                                            "alias ungoogled-chromium='chromium --disable-gpu'\n\n"
-                                           "# Set XDG_RUNTIME_DIR if not already set by system login\n"
-                                           "if [ -z \"$XDG_RUNTIME_DIR\" ]; then\n"
-                                           "  export XDG_RUNTIME_DIR=\"/tmp/runtime-$(id -u)\"\n"
-                                           "fi\n\n"
-                                           "# Include Guix Home and Nix profile binaries in PATH\n"
-                                           "export PATH=\"$HOME/.guix-home/profile/bin:$HOME/.guix-profile/bin:$HOME/.nix-profile/bin:$HOME/.local/state/nix/profiles/profile/bin:$PATH\"\n"))))))
+                                           "# Include local bin, Guix Home, and Nix profile binaries in PATH\n"
+                                           "export PATH=\"$HOME/.local/bin:$HOME/.guix-home/profile/bin:$HOME/.guix-profile/bin:$HOME/.nix-profile/bin:$HOME/.local/state/nix/profiles/profile/bin:$PATH\"\n"))))))
 
              ;; 3. Nix config service
              (simple-service 'nix-config-service
@@ -73,4 +88,5 @@
                                             (string-append "path:" (getenv "HOME") "/src/guix-system/nix"))))))
             
             dwl-home-services
+            kanshi-home-services
             foot-home-services)))

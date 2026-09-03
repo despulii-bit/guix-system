@@ -1,15 +1,16 @@
-;; /etc/config.scm
+;; system/config.scm
 (use-modules (gnu)
              (gnu packages window-management)
              (gnu services networking)
-             (gnu services shepherd)          ; Added for shepherd-service-type
+             (gnu services shepherd)
+             (gnu services desktop)
              (guix packages)
              (guix gexp)
              (guix utils)
              (nongnu packages linux)
              (nongnu system linux-initrd))
 
-(use-service-modules desktop xorg networking guix pm)
+(use-service-modules desktop xorg networking guix pm dbus)
 (use-package-modules linux firmware screen version-control admin terminals ncurses)
 
 ;; Custom package definition that injects your HHKB config.h into dwl
@@ -96,7 +97,12 @@
   ;; --- Services ---
   (services
     (append (list 
-                  ;; Creates /tmp/runtime-1000 at boot to prevent missing XDG_RUNTIME_DIR errors
+                  ;; Export XDG_RUNTIME_DIR globally into /etc/environment
+                  (simple-service 'set-xdg-runtime-env
+                                  session-environment-service-type
+                                  '(("XDG_RUNTIME_DIR" . "/tmp/runtime-1000")))
+
+                  ;; Creates /tmp/runtime-1000 at boot
                   create-user-runtime-dir-service
 
                   ;; Automatically sets brightness to 1% on startup

@@ -1,7 +1,10 @@
 ;; user/foot/service.scm
-(use-modules (gnu home services)
-             (gnu packages terminals)
-             (guix gexp))
+(define-module (user foot service)
+  #:use-module (gnu home services)
+  #:use-module (gnu packages terminals)
+  #:use-module (guix gexp)
+  #:export (foot-packages
+            foot-home-services))
 
 ;; Packages required for Foot terminal setup
 (define foot-packages
