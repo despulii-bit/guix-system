@@ -1,83 +1,73 @@
+;; user/guix-home-config.scm
 (use-modules (gnu home)
              (gnu home services)
              (gnu home services shells)
-             (gnu packages linux)             ; Added for brightnessctl
-             (gnu packages wm)                ; Added for kanshi and wlr-randr
+             (gnu packages linux)
              (gnu packages version-control)
              (gnu packages screen)
              (gnu packages bash)
              (gnu packages fontutils)
              (gnu packages fonts)
-             (guix gexp))
+             (guix gexp)
+             (srfi srfi-1))
+
+;; Load the dwl service file relative to the current directory
+(load (string-append (dirname (current-filename)) "/dwl/service.scm"))
 
 (home-environment
-  ;; Packages installed directly into your user profile via Guix
+  ;; Base packages + packages from DWL module
   (packages
-    (list git
-          screen
-          brightnessctl                   ; Brightness control CLI
-          kanshi                          ; Dynamic display autoconfig daemon
-          wlr-randr                       ; Command-line tool for Wayland display management
-          fontconfig                      ; Provides 'fc-cache'
-          font-dejavu                      ; Standard UI fonts
-          font-liberation                  ; Standard web fallbacks
-          font-google-noto))              ; Full unicode/glyph coverage
+    (append (list git
+                  screen
+                  brightnessctl
+                  fontconfig
+                  font-dejavu
+                  font-liberation
+                  font-google-noto)
+            dwl-packages))
 
-  ;; Services for managing dotfiles, environment variables, and activation hooks
+  ;; Base services + DWL services
   (services
-    (list
-     ;; 1. Global Environment Variables (Sourced before shells start)
-     (simple-service 'set-xdg-runtime-dir
-                     home-environment-variables-service-type
-                     `(("XDG_RUNTIME_DIR" . ,(string-append "/tmp/runtime-" (number->string (getuid))))))
+    (append (list
+             ;; 1. Ensure runtime directory is created on login with 0700 permissions
+             (simple-service 'create-xdg-runtime-dir
+                             home-activation-service-type
+                             #~(let ((dir (string-append "/tmp/runtime-" (number->string (getuid)))))
+                                 (mkdir-p dir)
+                                 (chmod dir #o700)))
 
-     ;; 2. Ensure runtime directory folder exists on activation
-     (simple-service 'create-xdg-runtime-dir
-                     home-activation-service-type
-                     #~(let ((dir (string-append "/tmp/runtime-" (number->string (getuid)))))
-                         (mkdir-p dir)
-                         (chmod dir #o700)))
+             ;; 2. Shell configuration
+             (service home-bash-service-type
+                      (home-bash-configuration
+                       (guix-defaults? #t)
+                       (bashrc
+                        (list (plain-file "bashrc"
+                                          (string-append
+                                           "export EDITOR=nano\n"
+                                           "alias ll='ls -l'\n"
+                                           "alias chromium='chromium --disable-gpu'\n"
+                                           "alias ungoogled-chromium='chromium --disable-gpu'\n\n"
+                                           "# Set XDG_RUNTIME_DIR if not already set by system login\n"
+                                           "if [ -z \"$XDG_RUNTIME_DIR\" ]; then\n"
+                                           "  export XDG_RUNTIME_DIR=\"/tmp/runtime-$(id -u)\"\n"
+                                           "fi\n\n"
+                                           "# Include Guix Home and Nix profile binaries in PATH\n"
+                                           "export PATH=\"$HOME/.guix-home/profile/bin:$HOME/.guix-profile/bin:$HOME/.nix-profile/bin:$HOME/.local/state/nix/profiles/profile/bin:$PATH\"\n"))))))
 
-     ;; 3. Configure Bash & PATH for Guix Home and Nix binaries
-     (service home-bash-service-type
-              (home-bash-configuration
-               (guix-defaults? #t)
-               (bashrc
-                (list (plain-file "bashrc"
-                                  (string-append
-                                   "export EDITOR=nano\n"
-                                   "alias ll='ls -l'\n"
-                                   "alias dwl='dwl -s ~/.config/dwl/autostart.sh'\n"
-                                   "alias chromium='chromium --disable-gpu'\n"
-                                   "alias ungoogled-chromium='chromium --disable-gpu'\n\n"
-                                   "# Include Guix Home and Nix profile binaries in PATH\n"
-                                   "export PATH=\"$HOME/.guix-home/profile/bin:$HOME/.guix-profile/bin:$HOME/.nix-profile/bin:$HOME/.local/state/nix/profiles/profile/bin:$PATH\"\n"))))))
+             ;; 3. Nix config service
+             (simple-service 'nix-config-service
+                             home-xdg-configuration-files-service-type
+                             `(("nix/nix.conf"
+                                ,(plain-file "nix.conf"
+                                             "experimental-features = nix-command flakes\n"))))
 
-     ;; 4. Declaratively manage ~/.config/kanshi/config for auto-display switching
-     (simple-service 'kanshi-config-service
-                     home-xdg-configuration-files-service-type
-                     `(("kanshi/config"
-                        ,(plain-file "kanshi-config"
-                                     (string-append
-                                      "# Fallback: Laptop screen only when no external display is present\n"
-                                      "profile laptop_only {\n"
-                                      "  output eDP-1 enable\n"
-                                      "}\n\n"
-                                      "# When HDMI is connected: disable laptop screen, enable external display\n"
-                                      "profile external_only {\n"
-                                      "  output eDP-1 disable\n"
-                                      "  output HDMI-A-1 enable\n"
-                                      "}\n")))))
-
-     ;; 5. Declaratively manage ~/.config/nix/nix.conf
-     (simple-service 'nix-config-service
-                     home-xdg-configuration-files-service-type
-                     `(("nix/nix.conf"
-                        ,(plain-file "nix.conf"
-                                     "experimental-features = nix-command flakes\n"))))
-
-     ;; 6. Automatically activate/add the Nix Flake on 'guix home reconfigure'
-     (simple-service 'nix-flake-activation
-                     home-activation-service-type
-                     #~(system* "nix" "profile" "add"
-                                (string-append "path:" (getenv "HOME") "/src/guix-system/nix"))))))
+             ;; 4. Nix Flake activation safely checking if Nix binary exists
+             (simple-service 'nix-flake-activation
+                             home-activation-service-type
+                             #~(let ((nix-bin (or (false-if-exception (search-path (string-split (getenv "PATH") #\:) "nix"))
+                                                  "/nix/var/nix/profiles/default/bin/nix")))
+                                 (when (file-exists? nix-bin)
+                                   (system* nix-bin "profile" "add"
+                                            (string-append "path:" (getenv "HOME") "/src/guix-system/nix"))))))
+            
+            dwl-home-services)))
