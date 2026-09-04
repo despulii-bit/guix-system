@@ -6,6 +6,7 @@
              (gnu packages screen)
              (gnu packages fontutils)
              (gnu packages fonts)
+             (gnu packages ncurses)
              (guix gexp)
              (srfi srfi-1))
 
@@ -15,17 +16,19 @@
 (load (string-append (dirname (current-filename)) "/foot/service.scm"))
 (load (string-append (dirname (current-filename)) "/emacs/service.scm"))
 (load (string-append (dirname (current-filename)) "/bash/service.scm"))
+(load (string-append (dirname (current-filename)) "/fuzzel/service.scm"))
 
 ;; 2. Import their exported variables
 (use-modules (user dwl service)
              (user kanshi service)
              (user foot service)
              (user emacs service)
-             (user bash service))
+             (user bash service)
+             (user fuzzel service))
 
 (home-environment
   ;; Combine base packages + DWL packages + Kanshi packages + Foot packages
-  ;; + Emacs packages + Bash packages
+  ;; + Emacs packages + Bash packages + Fuzzel packages
   (packages
     (append (list git
                   screen
@@ -33,15 +36,17 @@
                   fontconfig
                   font-dejavu
                   font-liberation
-                  font-google-noto)
+                  font-google-noto
+                  ncurses)
             dwl-packages
             kanshi-packages
             foot-packages
             emacs-packages
-            bash-packages))
+            bash-packages
+            fuzzel-packages))
 
   ;; Combine base services + DWL services + Kanshi services + Foot services
-  ;; + Emacs services + Bash services
+  ;; + Emacs services + Bash services + Fuzzel services
   (services
     (append (list
              ;; 1. Nix config service
@@ -64,4 +69,5 @@
             kanshi-home-services
             foot-home-services
             emacs-home-services
-            bash-home-services)))
+            bash-home-services
+            fuzzel-home-services)))

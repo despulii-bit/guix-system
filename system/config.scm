@@ -1,30 +1,14 @@
 ;; system/config.scm
 (use-modules (gnu)
-             (gnu packages window-management)
              (gnu services networking)
              (gnu services shepherd)
              (gnu services desktop)
-             (guix packages)
              (guix gexp)
-             (guix utils)
              (nongnu packages linux)
              (nongnu system linux-initrd))
 
 (use-service-modules desktop xorg networking guix pm dbus)
-(use-package-modules linux firmware screen version-control admin terminals ncurses)
-
-;; Custom package definition that injects your HHKB config.h into dwl
-(define custom-dwl
-  (package
-    (inherit dwl)
-    (arguments
-     (substitute-keyword-arguments (package-arguments dwl)
-       ((#:phases phases)
-        #~(modify-phases #$phases
-            (add-before 'build 'use-custom-config
-              (lambda _
-                (copy-file #$(local-file "/home/i/.config/dwl/config.h") "config.h")
-                #t))))))))
+(use-package-modules firmware linux)
 
 ;; Service to automatically create /tmp/runtime-1000 on boot for Wayland/dwl
 (define create-user-runtime-dir-service
@@ -67,8 +51,11 @@
                  (supplementary-groups '("wheel" "netdev" "audio" "video" "input" "seat")))
                %base-user-accounts))
 
-  ;; Include custom dwl and essential Wayland tools globally
-  (packages (cons* custom-dwl foot wmenu ncurses %base-packages))
+  ;; dwl, foot, and the app launcher are entirely Guix Home-managed now
+  ;; (see user/dwl, user/foot, user/fuzzel) - none of them need root or
+  ;; system-level installation, since seat access comes from seatd below
+  ;; plus the user's "seat" group membership.
+  (packages %base-packages)
 
   ;; --- Non-free Hardware Setup ---
   (kernel linux-lts)

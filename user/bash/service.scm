@@ -52,4 +52,7 @@
                                  "alias chromium='chromium --disable-gpu'\n"
                                  "alias ungoogled-chromium='chromium --disable-gpu'\n\n"
                                  "# Include local bin, Guix Home, and Nix profile binaries in PATH\n"
-                                 "export PATH=\"$HOME/.local/bin:$HOME/.guix-home/profile/bin:$HOME/.guix-profile/bin:$HOME/.nix-profile/bin:$HOME/.local/state/nix/profiles/profile/bin:$PATH\"\n"))))))))
+                                 "export PATH=\"$HOME/.local/bin:$HOME/.guix-home/profile/bin:$HOME/.guix-profile/bin:$HOME/.nix-profile/bin:$HOME/.local/state/nix/profiles/profile/bin:$PATH\"\n\n"
+                                 "# Include local, Guix Home, and Nix profile .desktop dirs so launchers\n"
+                                 "# like fuzzel (which scan XDG_DATA_DIRS, not PATH) can find GUI apps\n"
+                                 "export XDG_DATA_DIRS=\"$HOME/.local/share:$HOME/.guix-home/profile/share:$HOME/.guix-profile/share:$HOME/.nix-profile/share:$HOME/.local/state/nix/profiles/profile/share:${XDG_DATA_DIRS:-/run/current-system/profile/share:/usr/local/share:/usr/share}\"\n"))))))))

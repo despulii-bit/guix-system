@@ -88,7 +88,7 @@ static const char *const autostart[] = {
 };
 
 static const char *termcmd[] = { \"foot\", NULL };
-static const char *menucmd[] = { \"wmenu-run\", NULL };
+static const char *menucmd[] = { \"fuzzel\", NULL };
 
 static const Key keys[] = {
     { MODKEY,                    XKB_KEY_p,         spawn,          {.v = menucmd} },
