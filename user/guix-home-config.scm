@@ -15,14 +15,16 @@
 (load (string-append (dirname (current-filename)) "/dwl/service.scm"))
 (load (string-append (dirname (current-filename)) "/kanshi/service.scm"))
 (load (string-append (dirname (current-filename)) "/foot/service.scm"))
+(load (string-append (dirname (current-filename)) "/emacs/service.scm"))
 
 ;; 2. Import their exported variables
 (use-modules (user dwl service)
              (user kanshi service)
-             (user foot service))
+             (user foot service)
+             (user emacs service))
 
 (home-environment
-  ;; Combine base packages + DWL packages + Kanshi packages + Foot packages
+  ;; Combine base packages + DWL packages + Kanshi packages + Foot packages + Emacs packages
   (packages
     (append (list git
                   screen
@@ -33,9 +35,10 @@
                   font-google-noto)
             dwl-packages
             kanshi-packages
-            foot-packages))
+            foot-packages
+            emacs-packages))
 
-  ;; Combine base services + DWL services + Kanshi services + Foot services
+  ;; Combine base services + DWL services + Kanshi services + Foot services + Emacs services
   (services
     (append (list
              ;; 1. Ensure runtime directory is created on login with 0700 permissions
@@ -89,4 +92,5 @@
             
             dwl-home-services
             kanshi-home-services
-            foot-home-services)))
+            foot-home-services
+            emacs-home-services)))
