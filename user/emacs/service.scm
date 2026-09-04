@@ -6,9 +6,9 @@
   #:export (emacs-packages
             emacs-home-services))
 
-;; Packages required for Emacs setup
+;; Install emacs-pgtk for native Wayland support under dwl
 (define emacs-packages
-  (list emacs))
+  (list emacs-pgtk))
 
 ;; Emacs theme mirroring the "Pitch Black / Minimalist Low Contrast" foot palette
 (define emacs-theme-config
@@ -67,11 +67,13 @@
 (provide-theme 'pitch-black)
 ")
 
-;; Emacs init.el - loads the theme above and sets a few sane minimalist defaults
-;; consistent with the low-contrast, no-frills feel of the foot config.
+;; Emacs init.el - loads theme, font size 16, and minimalist defaults
 (define emacs-init-config
   "\
 ;; init.el - Guix Home managed
+
+;; Set default font size to 16pt (160 in 1/10pt units)
+(set-face-attribute 'default nil :height 160)
 
 ;; Make sure our custom theme (installed alongside this file) is found
 (setq custom-theme-directory (expand-file-name \"themes\" user-emacs-directory))
@@ -88,12 +90,43 @@
 (setq-default cursor-type 'bar)
 ")
 
+;; Desktop file to explicitly launch emacs in Wayland GUI mode without stdin dependencies
+(define emacs-desktop-config
+  "[Desktop Entry]
+Name=Emacs
+GenericName=Text Editor
+Comment=Edit text
+Exec=emacs %F
+Icon=emacs
+Type=Application
+Terminal=false
+Categories=Development;TextEditor;
+StartupWMClass=Emacs
+")
+
+;; Desktop file override to hide emacsclient from Fuzzel launcher
+(define emacsclient-desktop-config
+  "[Desktop Entry]
+Name=Emacs (Client)
+Type=Application
+NoDisplay=true
+Exec=emacsclient
+")
+
 (define emacs-home-services
   (list
-   ;; Declaratively manage ~/.config/emacs/init.el and the pitch-black theme
+   ;; Declaratively manage ~/.config/emacs/init.el and theme
    (simple-service 'emacs-config-service
                    home-xdg-configuration-files-service-type
                    `(("emacs/init.el"
                       ,(plain-file "init.el" emacs-init-config))
                      ("emacs/themes/pitch-black-theme.el"
-                      ,(plain-file "pitch-black-theme.el" emacs-theme-config))))))
+                      ,(plain-file "pitch-black-theme.el" emacs-theme-config))))
+
+   ;; Declaratively manage ~/.local/share/applications/ to sanitize desktop entries
+   (simple-service 'emacs-desktop-entries-service
+                   home-xdg-data-files-service-type
+                   `(("applications/emacs.desktop"
+                      ,(plain-file "emacs.desktop" emacs-desktop-config))
+                     ("applications/emacsclient.desktop"
+                      ,(plain-file "emacsclient.desktop" emacsclient-desktop-config))))))
