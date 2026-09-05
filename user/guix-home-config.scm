@@ -1,22 +1,26 @@
 ;; user/guix-home-config.scm
 (use-modules (gnu home)
              (gnu home services)
+             (gnu packages)
              (gnu packages linux)
              (gnu packages version-control)
              (gnu packages screen)
-             (gnu packages fontutils)
-             (gnu packages fonts)
              (gnu packages ncurses)
              (guix gexp)
+             (guix utils)
              (srfi srfi-1))
 
+;; Get current directory reliably
+(define %config-dir (current-source-directory))
+
 ;; 1. Load the relative module files into memory first
-(load (string-append (dirname (current-filename)) "/dwl/service.scm"))
-(load (string-append (dirname (current-filename)) "/kanshi/service.scm"))
-(load (string-append (dirname (current-filename)) "/foot/service.scm"))
-(load (string-append (dirname (current-filename)) "/emacs/service.scm"))
-(load (string-append (dirname (current-filename)) "/bash/service.scm"))
-(load (string-append (dirname (current-filename)) "/fuzzel/service.scm"))
+(load (string-append %config-dir "/dwl/service.scm"))
+(load (string-append %config-dir "/kanshi/service.scm"))
+(load (string-append %config-dir "/foot/service.scm"))
+(load (string-append %config-dir "/emacs/service.scm"))
+(load (string-append %config-dir "/bash/service.scm"))
+(load (string-append %config-dir "/fuzzel/service.scm"))
+(load (string-append %config-dir "/fontconfig/service.scm"))
 
 ;; 2. Import their exported variables
 (use-modules (user dwl service)
@@ -24,47 +28,25 @@
              (user foot service)
              (user emacs service)
              (user bash service)
-             (user fuzzel service))
+             (user fuzzel service)
+             (user fontconfig service))
 
 (home-environment
-  ;; Combine base packages + DWL packages + Kanshi packages + Foot packages
-  ;; + Emacs packages + Bash packages + Fuzzel packages
   (packages
     (append (list git
                   screen
                   brightnessctl
-                  fontconfig
-                  font-dejavu
-                  font-liberation
-                  font-google-noto
-                  ncurses)
+                  ncurses
+                  (specification->package "ungoogled-chromium-wayland"))
+            fontconfig-packages
             dwl-packages
             kanshi-packages
             foot-packages
             emacs-packages
             bash-packages
             fuzzel-packages))
-
-  ;; Combine base services + DWL services + Kanshi services + Foot services
-  ;; + Emacs services + Bash services + Fuzzel services
   (services
-    (append (list
-             ;; 1. Nix config service
-             (simple-service 'nix-config-service
-                             home-xdg-configuration-files-service-type
-                             `(("nix/nix.conf"
-                                ,(plain-file "nix.conf"
-                                             "experimental-features = nix-command flakes\n"))))
-
-             ;; 2. Nix Flake activation safely checking if Nix binary exists
-             (simple-service 'nix-flake-activation
-                             home-activation-service-type
-                             #~(let ((nix-bin (or (false-if-exception (search-path (string-split (getenv "PATH") #\:) "nix"))
-                                                  "/nix/var/nix/profiles/default/bin/nix")))
-                                 (when (file-exists? nix-bin)
-                                   (system* nix-bin "profile" "add"
-                                            (string-append "path:" (getenv "HOME") "/src/guix-system/nix"))))))
-            
+    (append fontconfig-home-services
             dwl-home-services
             kanshi-home-services
             foot-home-services

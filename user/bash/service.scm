@@ -6,17 +6,12 @@
   #:export (bash-packages
             bash-home-services))
 
-;; Bash itself ships as part of Guix Home's core support, so there's
-;; nothing extra to pull in here. Kept as an empty list for parity with
-;; the other service files, and as a natural place to add packages like
-;; bash-completion later.
 (define bash-packages
   (list))
 
 (define bash-home-services
   (list
-   ;; Ensure XDG_RUNTIME_DIR exists on login with 0700 permissions,
-   ;; before any shell startup files run
+   ;; Ensure XDG_RUNTIME_DIR exists on login with 0700 permissions
    (simple-service 'create-xdg-runtime-dir
                    home-activation-service-type
                    #~(let ((dir (string-append "/tmp/runtime-" (number->string (getuid)))))
@@ -40,7 +35,6 @@
                                  "  \"$HOME/.guix-home/on-first-login\"\n"
                                  "fi\n\n"
                                  "# Login shells don't source .bashrc automatically - pull it in\n"
-                                 "# so PATH (Guix Home / Nix profile bins) is set before we exec dwl\n"
                                  "if [ -f \"$HOME/.bashrc\" ]; then\n"
                                  "  . \"$HOME/.bashrc\"\n"
                                  "fi\n"))))
@@ -49,10 +43,13 @@
                                 (string-append
                                  "export EDITOR=nano\n"
                                  "alias ll='ls -l'\n"
-                                 "alias chromium='chromium --disable-gpu'\n"
-                                 "alias ungoogled-chromium='chromium --disable-gpu'\n\n"
+                                 "alias ungoogled-chromium='chromium'\n\n"
+
                                  "# Include local bin, Guix Home, and Nix profile binaries in PATH\n"
                                  "export PATH=\"$HOME/.local/bin:$HOME/.guix-home/profile/bin:$HOME/.guix-profile/bin:$HOME/.nix-profile/bin:$HOME/.local/state/nix/profiles/profile/bin:$PATH\"\n\n"
-                                 "# Include local, Guix Home, and Nix profile .desktop dirs so launchers\n"
-                                 "# like fuzzel (which scan XDG_DATA_DIRS, not PATH) can find GUI apps\n"
-                                 "export XDG_DATA_DIRS=\"$HOME/.local/share:$HOME/.guix-home/profile/share:$HOME/.guix-profile/share:$HOME/.nix-profile/share:$HOME/.local/state/nix/profiles/profile/share:${XDG_DATA_DIRS:-/run/current-system/profile/share:/usr/local/share:/usr/share}\"\n"))))))))
+
+                                 "# Include local, Guix Home, and Nix profile .desktop dirs for launchers\n"
+                                 "export XDG_DATA_DIRS=\"$HOME/.local/share:$HOME/.guix-home/profile/share:$HOME/.guix-profile/share:$HOME/.nix-profile/share:$HOME/.local/state/nix/profiles/profile/share:${XDG_DATA_DIRS:-/run/current-system/profile/share:/usr/local/share:/usr/share}\"\n\n"
+
+                                 "# Bridge XDG Desktop Portals for file choosers\n"
+                                 "export XDG_DESKTOP_PORTAL_DIR=\"/run/current-system/profile/share/xdg-desktop-portal:$HOME/.guix-home/profile/share/xdg-desktop-portal\"\n"))))))))
