@@ -8,14 +8,6 @@
   #:export (dwl-home-services
             dwl-packages))
 
-;; Startup script that waits for WAYLAND_DISPLAY before running wlr-randr
-(define dwl-startup-script
-  (program-file
-   "dwl-startup"
-   #~(begin
-       (use-modules (ice-9 popen))
-       (system "while [ -z \"$WAYLAND_DISPLAY\" ]; do sleep 0.1; done; wlr-randr --output eDP-1 --off"))))
-
 ;; Managed dwl C configuration header generated as a store file
 (define dwl-config-h-file
   (mixed-text-file
@@ -78,12 +70,11 @@ static const enum libinput_config_tap_button_map button_map = LIBINPUT_CONFIG_TA
 #define TAGKEYS(KEY,SKEY,TAG) \\
     { MODKEY,                                KEY,     view,           {.ui = 1 << TAG} }, \\
     { MODKEY|WLR_MODIFIER_CTRL,              KEY,     toggleview,     {.ui = 1 << TAG} }, \\
-    { MODKEY|WLR_MODIFIER_SHIFT,              SKEY,    tag,            {.ui = 1 << TAG} }, \\
+    { MODKEY|WLR_MODIFIER_SHIFT,             SKEY,    tag,            {.ui = 1 << TAG} }, \\
     { MODKEY|WLR_MODIFIER_CTRL|WLR_MODIFIER_SHIFT,SKEY,toggletag,     {.ui = 1 << TAG} }
 
-/* Autostart array calling store script */
+/* Autostart array */
 static const char *const autostart[] = {
-    \"" dwl-startup-script "\", NULL,
     NULL /* terminate */
 };
 
@@ -156,5 +147,5 @@ static const Button buttons[] = {
 (define dwl-home-services
   (list
    (simple-service 'dwl-config-service
-                   home-xdg-configuration-files-service-type
-                   `(("dwl/config.h" ,dwl-config-h-file)))))
+                    home-xdg-configuration-files-service-type
+                    `(("dwl/config.h" ,dwl-config-h-file)))))

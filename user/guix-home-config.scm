@@ -15,7 +15,6 @@
 
 ;; 1. Load the relative module files into memory first
 (load (string-append %config-dir "/dwl/service.scm"))
-(load (string-append %config-dir "/kanshi/service.scm"))
 (load (string-append %config-dir "/foot/service.scm"))
 (load (string-append %config-dir "/emacs/service.scm"))
 (load (string-append %config-dir "/bash/service.scm"))
@@ -24,7 +23,6 @@
 
 ;; 2. Import their exported variables
 (use-modules (user dwl service)
-             (user kanshi service)
              (user foot service)
              (user emacs service)
              (user bash service)
@@ -40,7 +38,6 @@
                   (specification->package "ungoogled-chromium-wayland"))
             fontconfig-packages
             dwl-packages
-            kanshi-packages
             foot-packages
             emacs-packages
             bash-packages
@@ -48,7 +45,6 @@
   (services
     (append fontconfig-home-services
             dwl-home-services
-            kanshi-home-services
             foot-home-services
             emacs-home-services
             bash-home-services
