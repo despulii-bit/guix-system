@@ -72,8 +72,8 @@
   "\
 ;; init.el - Guix Home managed
 
-;; Set default font size to 16pt (160 in 1/10pt units)
-(set-face-attribute 'default nil :height 160)
+;; Set default font family to Iosevka and size to 16pt (160 in 1/10pt units)
+(set-face-attribute 'default nil :family \"Iosevka\" :height 160)
 
 ;; Make sure our custom theme (installed alongside this file) is found
 (setq custom-theme-directory (expand-file-name \"themes\" user-emacs-directory))

@@ -14,9 +14,10 @@
 (define foot-ini-config
   "[main]
 term=foot
-font=monospace:size=16
+font=Iosevka:size=16
 dpi-aware=yes
 pad=8x8
+initial-window-size-chars=120x40
 
 [colors-dark]
 alpha=1.0
@@ -49,7 +50,23 @@ bright6=466a6e # low-contrast cyan
 bright7=707070 # muted light gray
 
 [csd]
-preferred=server
+preferred=none
+")
+
+(define foot-server-desktop-override
+  "[Desktop Entry]
+Type=Application
+Name=Foot Server
+Exec=foot --server
+NoDisplay=true
+")
+
+(define footclient-desktop-override
+  "[Desktop Entry]
+Type=Application
+Name=Foot Client
+Exec=footclient
+NoDisplay=true
 ")
 
 (define foot-home-services
@@ -57,4 +74,12 @@ preferred=server
    ;; Declaratively manage ~/.config/foot/foot.ini
    (simple-service 'foot-config-service
                    home-xdg-configuration-files-service-type
-                   `(("foot/foot.ini" ,(plain-file "foot.ini" foot-ini-config))))))
+                   `(("foot/foot.ini" ,(plain-file "foot.ini" foot-ini-config))))
+
+   ;; Declaratively place desktop file overrides into ~/.local/share/applications/
+   (simple-service 'foot-hide-desktop-entries-service
+                   home-xdg-data-files-service-type
+                   `(("applications/foot-server.desktop"
+                      ,(plain-file "foot-server.desktop" foot-server-desktop-override))
+                     ("applications/footclient.desktop"
+                      ,(plain-file "footclient.desktop" footclient-desktop-override))))))

@@ -20,6 +20,7 @@
 (load (string-append %config-dir "/bash/service.scm"))
 (load (string-append %config-dir "/fuzzel/service.scm"))
 (load (string-append %config-dir "/fontconfig/service.scm"))
+(load (string-append %config-dir "/ssh/service.scm"))
 
 ;; 2. Import their exported variables
 (use-modules (user dwl service)
@@ -27,7 +28,8 @@
              (user emacs service)
              (user bash service)
              (user fuzzel service)
-             (user fontconfig service))
+             (user fontconfig service)
+             (user ssh service))
 
 (home-environment
   (packages
@@ -43,7 +45,8 @@
             bash-packages
             fuzzel-packages))
   (services
-    (append fontconfig-home-services
+    (append (list ssh-home-service)
+            fontconfig-home-services
             dwl-home-services
             foot-home-services
             emacs-home-services

@@ -14,7 +14,7 @@
 ;; Contrast" palette used by foot and the Emacs theme.
 (define fuzzel-ini-config
   "[main]
-font=monospace:size=14
+font=Iosevka:size=14
 lines=8
 width=40
 prompt='> '

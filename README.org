@@ -16,11 +16,6 @@ Contains metadata, repository definitions, and system-wide Guix channels.
 Contains GNU Guix Home specifications for managing the user profile, dotfiles, and user-installed packages.
 - ~guix-home-config.scm~ :: The central Guix Home environment declaration handling user packages, font dependencies, shell environments, and user-level service configurations.
 
-** =nix/=
-Contains declarative Nix Flake declarations for packages managed via Nixpkgs.
-- ~flake.nix~ :: Defines non-Guix packages (e.g., ~ungoogled-chromium~) installed into the user profile.
-- ~flake.lock~ :: Lockfile pinning the ~nixpkgs~ revision for reproducible builds.
-
 ** =system/=
 Contains core system-level declarations and hardware-specific configurations.
 - ~config.scm~ :: The primary ~operating-system~ declaration defining system services, users, bootloader, kernel, and file systems.

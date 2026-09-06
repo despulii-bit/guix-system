@@ -11,9 +11,9 @@
 ;; Font packages to be installed in the profile
 (define fontconfig-packages
   (list fontconfig
-        font-dejavu
-        font-liberation
-        font-google-noto))
+        font-iosevka
+        font-ibm-plex
+        font-tex-gyre))
 
 ;; Extend the built-in fontconfig service with your extra directories
 (define fontconfig-home-services
