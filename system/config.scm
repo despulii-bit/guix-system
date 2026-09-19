@@ -118,7 +118,12 @@
                                               %default-substitute-urls))
                                     (authorized-keys
                                       (append (list (plain-file "nonguix.pub"
-                                                                "(public-key (ecc (curve Ed25519) (q #C1F338F19428B2CE45A122E426D8D8CF058225736D2A6D5A704D8B6538E00C8D#)))"))
+                                                                "(public-key
+  (ecc
+    (curve Ed25519)
+    (q #C1F338F19428B2CE45A122E426D8D8CF058225736D2A6D5A704D8B6538E00C8D#)
+  )
+)"))
                                               %default-authorized-guix-keys)))))
             
             %base-services)))

@@ -12,6 +12,7 @@
 (define fontconfig-packages
   (list fontconfig
         font-iosevka
+	font-iosevka-term
         font-ibm-plex
         font-tex-gyre))
 

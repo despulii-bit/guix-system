@@ -14,9 +14,9 @@
 (define foot-ini-config
   "[main]
 term=foot
-font=Iosevka:size=16
+font=Iosevka Term:size=16
 dpi-aware=yes
-pad=8x8
+pad=8x0 center
 initial-window-size-chars=120x40
 
 [colors-dark]
