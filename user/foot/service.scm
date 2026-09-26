@@ -19,6 +19,10 @@ dpi-aware=yes
 pad=8x0 center
 initial-window-size-chars=120x40
 
+[scrollback]
+lines=10000
+multiplier=3.0
+
 [colors-dark]
 alpha=1.0
 background=000000

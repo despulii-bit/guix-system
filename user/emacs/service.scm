@@ -6,13 +6,15 @@
   #:export (emacs-packages
             emacs-home-services))
 
-;; Install emacs-pgtk for native Wayland support under dwl
+;; Install emacs-pgtk for native Wayland support under dwl[cite: 1]
 (define emacs-packages
   (list emacs-pgtk))
 
-;; Emacs theme mirroring the "Pitch Black / Minimalist Low Contrast" foot palette
+;; Emacs theme mirroring the "Pitch Black / Minimalist Low Contrast" foot palette[cite: 1]
 (define emacs-theme-config
-  "(deftheme pitch-black
+  ";;; pitch-black-theme.el --- Pitch Black theme -*- lexical-binding: t; -*-
+
+(deftheme pitch-black
   \"Pitch Black / Minimalist Low Contrast theme matching the foot terminal colors.\")
 
 (let ((bg        \"#000000\")
@@ -67,10 +69,12 @@
 (provide-theme 'pitch-black)
 ")
 
-;; Emacs init.el - loads theme, font size 16, and minimalist defaults
+;; Emacs init.el - loads theme, font size 16, and minimalist defaults[cite: 1]
 (define emacs-init-config
-  "\
-;; init.el - Guix Home managed
+  ";;; init.el --- Guix Home managed init.el -*- lexical-binding: t; -*-
+
+;; Force frame to start maximized/properly sized under Wayland / PGTK
+(add-to-list 'default-frame-alist '(fullscreen . maximized))
 
 ;; Set default font family to Iosevka and size to 16pt (160 in 1/10pt units)
 (set-face-attribute 'default nil :family \"Iosevka\" :height 160)
@@ -90,7 +94,7 @@
 (setq-default cursor-type 'bar)
 ")
 
-;; Desktop file to explicitly launch emacs in Wayland GUI mode without stdin dependencies
+;; Desktop file to explicitly launch emacs in Wayland GUI mode without stdin dependencies[cite: 1]
 (define emacs-desktop-config
   "[Desktop Entry]
 Name=Emacs
@@ -104,7 +108,7 @@ Categories=Development;TextEditor;
 StartupWMClass=Emacs
 ")
 
-;; Desktop file override to hide emacsclient from Fuzzel launcher
+;; Desktop file override to hide emacsclient from Fuzzel launcher[cite: 1]
 (define emacsclient-desktop-config
   "[Desktop Entry]
 Name=Emacs (Client)
