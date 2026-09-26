@@ -31,7 +31,12 @@ static const float fullscreen_bg[]         = {0.0f, 0.0f, 0.0f, 1.0f};
 static int log_level = WLR_ERROR;
 
 static const Rule rules[] = {
-    { \"foot\",      NULL,    0,            0,           -1 },
+    /* app_id           title             tags mask     isfloating   monitor */
+    { \"foot\",         NULL,             0,            0,           -1 },
+    { \"GtkFileChooserDialog\", NULL,     0,            1,           -1 },
+    { NULL,             \"Open File\",     0,            1,           -1 },
+    { NULL,             \"Save File\",     0,            1,           -1 },
+    { NULL,             \"Select a File\", 0,            1,           -1 },
 };
 
 static const Layout layouts[] = {
@@ -68,9 +73,9 @@ static const enum libinput_config_tap_button_map button_map = LIBINPUT_CONFIG_TA
 #define MODKEY WLR_MODIFIER_LOGO
 
 #define TAGKEYS(KEY,SKEY,TAG) \\
-    { MODKEY,                                KEY,     view,           {.ui = 1 << TAG} }, \\
-    { MODKEY|WLR_MODIFIER_CTRL,              KEY,     toggleview,     {.ui = 1 << TAG} }, \\
-    { MODKEY|WLR_MODIFIER_SHIFT,             SKEY,    tag,            {.ui = 1 << TAG} }, \\
+    { MODKEY,                                KEY,     view,       {.ui = 1 << TAG} }, \\
+    { MODKEY|WLR_MODIFIER_CTRL,              KEY,     toggleview, {.ui = 1 << TAG} }, \\
+    { MODKEY|WLR_MODIFIER_SHIFT,             SKEY,    tag,        {.ui = 1 << TAG} }, \\
     { MODKEY|WLR_MODIFIER_CTRL|WLR_MODIFIER_SHIFT,SKEY,toggletag,     {.ui = 1 << TAG} }
 
 /* Autostart array */
@@ -147,5 +152,5 @@ static const Button buttons[] = {
 (define dwl-home-services
   (list
    (simple-service 'dwl-config-service
-                    home-xdg-configuration-files-service-type
-                    `(("dwl/config.h" ,dwl-config-h-file)))))
+                   home-xdg-configuration-files-service-type
+                   `(("dwl/config.h" ,dwl-config-h-file)))))

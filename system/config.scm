@@ -3,11 +3,12 @@
              (gnu services networking)
              (gnu services shepherd)
              (gnu services desktop)
+             (gnu services dbus)
              (guix gexp)
              (nongnu packages linux)
              (nongnu system linux-initrd))
 
-(use-service-modules desktop xorg networking guix pm dbus)
+(use-service-modules desktop xorg networking guix pm)
 (use-package-modules firmware linux)
 
 ;; Service to automatically create /tmp/runtime-1000 on boot for Wayland/dwl
@@ -84,6 +85,9 @@
   ;; --- Services ---
   (services
     (append (list 
+                  ;; System DBus daemon required for Wayland portals and GTK communication
+                  (service dbus-root-service-type)
+
                   ;; Export XDG_RUNTIME_DIR globally into /etc/environment
                   (simple-service 'set-xdg-runtime-env
                                   session-environment-service-type
