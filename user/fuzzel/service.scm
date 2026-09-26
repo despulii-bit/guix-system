@@ -18,7 +18,7 @@ font=Iosevka:size=14
 lines=8
 width=40
 prompt='> '
-icon-theme=hicolor
+icons-enabled=no
 terminal=foot
 
 [colors]
@@ -31,8 +31,8 @@ selection-match=466a6eff
 border=505050ff
 
 [border]
-width=1
-radius=0
+width=0
+radius=10
 ")
 
 (define fuzzel-home-services
